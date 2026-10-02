@@ -1,0 +1,587 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ห้องโฟกัส</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600&family=JetBrains+Mono:wght@200;300;400&display=swap">
+<style>
+/* Layout: one quiet sheet — timer dial on the left, sound mixer on the right; stacks on phones */
+:root{
+  --bg:#EEF1EE;
+  --surface:#F8FAF8;
+  --ink:#1D2420;
+  --muted:#66706A;
+  --line:#D7DDD8;
+  --focus:#2E5B4E;
+  --break:#5F809B;
+  --accent:var(--focus);
+  --font-body:"Anuphan","Noto Sans Thai","Leelawadee UI",system-ui,sans-serif;
+  --font-num:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141816;--surface:#1B201D;--ink:#E4E9E5;--muted:#8E9892;--line:#2A312D;
+    --focus:#86BBA8;--break:#97B3CB;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141816;--surface:#1B201D;--ink:#E4E9E5;--muted:#8E9892;--line:#2A312D;
+  --focus:#86BBA8;--break:#97B3CB;color-scheme:dark;
+}
+body[data-mode="short"],body[data-mode="long"]{--accent:var(--break)}
+
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);
+  font-size:15px;line-height:1.55;padding:0 16px;
+  transition:background-color .6s ease;
+}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+.app{max-width:1040px;margin:0 auto;padding-block:28px 40px;display:flex;flex-direction:column;gap:28px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;letter-spacing:.01em}
+.brand .mark{width:10px;height:10px;border-radius:50%;background:var(--accent);transition:background-color .6s}
+.brand small{font-weight:400;color:var(--muted);font-size:13px}
+.today{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.today b{color:var(--ink);font-weight:500}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Timer */
+.timer{display:flex;flex-direction:column;align-items:center;gap:22px;padding-block:8px}
+.modes{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:999px}
+.modes button{border:0;background:transparent;padding:6px 16px;border-radius:999px;cursor:pointer;color:var(--muted);font-size:14px;transition:background-color .3s,color .3s}
+.modes button[aria-selected="true"]{background:var(--accent);color:var(--surface)}
+.modes button:hover:not([aria-selected="true"]){color:var(--ink)}
+
+.dial{position:relative;width:min(100%,360px);aspect-ratio:1;max-width:100%}
+.dial svg{width:100%;height:100%;display:block}
+.dial .track{fill:none;stroke:var(--line);stroke-width:3}
+.dial .prog{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;transition:stroke .6s}
+.dial .tick{stroke:var(--line);stroke-width:1.5;stroke-linecap:round}
+.dial .tick.on{stroke:var(--muted)}
+.readout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.time{font-family:var(--font-num);font-weight:200;font-size:clamp(56px,15vw,84px);line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.phase{font-size:14px;color:var(--muted)}
+.dots{display:flex;gap:8px;margin-top:6px}
+.dots span{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--muted);opacity:.6}
+.dots span.done{background:var(--accent);border-color:var(--accent);opacity:1}
+
+.task{width:min(100%,360px);border:0;border-bottom:1px solid var(--line);background:transparent;padding:8px 2px;text-align:center;font-size:15px}
+.task::placeholder{color:var(--muted);opacity:.8}
+.task:focus{outline:none;border-bottom-color:var(--accent)}
+
+.controls{display:flex;align-items:center;gap:18px}
+.icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--muted);transition:color .2s,border-color .2s}
+.icon-btn:hover{color:var(--ink);border-color:var(--muted)}
+.icon-btn svg{width:18px;height:18px}
+.primary{min-width:168px;height:52px;border-radius:999px;border:0;background:var(--accent);color:var(--surface);font-weight:500;font-size:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;transition:background-color .6s,transform .15s}
+.primary:active{transform:scale(.98)}
+.primary svg{width:16px;height:16px}
+.hint{font-size:12.5px;color:var(--muted);margin:0;text-align:center}
+.hint kbd{font-family:var(--font-num);font-size:11px;border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+
+/* Sound panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.panel h2{margin:0;font-size:16px;font-weight:600}
+.panel .sub{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.group{display:flex;flex-direction:column;gap:2px}
+.group-label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.snd{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center;gap:12px;padding:6px 0;border-top:1px solid var(--line)}
+.group .snd:first-of-type{border-top:0}
+.snd-toggle{display:flex;align-items:center;gap:12px;border:0;background:transparent;text-align:left;cursor:pointer;padding:6px 0;min-width:0}
+.bars{width:18px;height:16px;display:flex;align-items:flex-end;gap:2px;flex:none}
+.bars i{flex:1;background:var(--line);height:30%;border-radius:1px;transition:background-color .3s}
+.snd.on .bars i{background:var(--accent);animation:eq 1.2s ease-in-out infinite}
+.snd.on .bars i:nth-child(2){animation-delay:-.4s}
+.snd.on .bars i:nth-child(3){animation-delay:-.8s}
+@keyframes eq{0%,100%{height:30%}50%{height:100%}}
+.snd-text{display:flex;flex-direction:column;min-width:0}
+.snd-text b{font-weight:500;font-size:14.5px}
+.snd-text small{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.snd:not(.on) .snd-vol{opacity:.45}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--line);border-radius:3px}
+input[type=range]::-moz-range-track{height:3px;background:var(--line);border-radius:3px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);margin-top:-5.5px;border:0}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:0}
+
+.master{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.link-btn{border:0;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.link-btn:hover{color:var(--ink)}
+
+details.settings{border-top:1px solid var(--line);padding-top:14px}
+details.settings summary{cursor:pointer;font-size:14px;font-weight:500;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.settings summary::-webkit-details-marker{display:none}
+details.settings summary::after{content:"+";color:var(--muted);font-family:var(--font-num)}
+details.settings[open] summary::after{content:"−"}
+.set-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin-top:14px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+.field input{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;font-family:var(--font-num);font-size:14px;width:100%;font-variant-numeric:tabular-nums}
+.check{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink);cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+
+.foot{font-size:12.5px;color:var(--muted);text-align:center;max-width:60ch;margin:0 auto}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important}
+  .snd.on .bars i{animation:none;height:70%}
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="mark"></span>ห้องโฟกัส <small>Pomodoro</small></div>
+    <div class="today" id="today">วันนี้ <b>0</b> รอบ · <b>0</b> นาที</div>
+  </header>
+
+  <main class="grid">
+    <section class="timer" aria-label="ตัวจับเวลา">
+      <div class="modes" role="tablist" aria-label="ช่วงเวลา">
+        <button role="tab" id="tab-focus" data-mode="focus" aria-selected="true">โฟกัส</button>
+        <button role="tab" id="tab-short" data-mode="short" aria-selected="false">พักสั้น</button>
+        <button role="tab" id="tab-long" data-mode="long" aria-selected="false">พักยาว</button>
+      </div>
+
+      <div class="dial">
+        <svg viewBox="0 0 320 320" aria-hidden="true">
+          <g id="ticks"></g>
+          <circle class="track" cx="160" cy="160" r="136"></circle>
+          <circle class="prog" id="prog" cx="160" cy="160" r="136" transform="rotate(-90 160 160)"></circle>
+        </svg>
+        <div class="readout">
+          <div class="time" id="time" aria-live="off">25:00</div>
+          <div class="phase" id="phase">โฟกัส · รอบที่ 1/4</div>
+          <div class="dots" id="dots"></div>
+        </div>
+      </div>
+
+      <input class="task" id="task" type="text" maxlength="80" placeholder="รอบนี้จะอ่านเรื่องอะไร" aria-label="สิ่งที่กำลังโฟกัส">
+
+      <div class="controls">
+        <button class="icon-btn" id="reset" title="เริ่มรอบนี้ใหม่ (R)" aria-label="เริ่มรอบนี้ใหม่">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        </button>
+        <button class="primary" id="toggle">
+          <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>
+          <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" hidden><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>
+          <span id="toggle-label">เริ่มโฟกัส</span>
+        </button>
+        <button class="icon-btn" id="skip" title="ข้ามไปช่วงถัดไป (S)" aria-label="ข้ามไปช่วงถัดไป">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l10 7-10 7z"/><path d="M19 5v14"/></svg>
+        </button>
+      </div>
+      <p class="hint" id="hint">ปิดแจ้งเตือนโทรศัพท์ แล้วเริ่มได้เลย · <kbd>Space</kbd> เริ่ม/หยุด · <kbd>R</kbd> เริ่มใหม่</p>
+    </section>
+
+    <aside class="panel" aria-label="เสียงช่วยโฟกัส">
+      <div>
+        <h2>เสียงช่วยโฟกัส</h2>
+        <p class="sub">แตะเพื่อเปิดหรือปิด เปิดพร้อมกันได้หลายเสียง</p>
+      </div>
+      <div id="sound-groups" style="display:flex;flex-direction:column;gap:16px"></div>
+
+      <div class="master">
+        <label for="master">ความดังรวม</label>
+        <input type="range" id="master" min="0" max="100" value="80">
+        <button class="link-btn" id="stop-all">ปิดทั้งหมด</button>
+      </div>
+
+      <details class="settings" id="settings">
+        <summary>ตั้งค่าเวลา</summary>
+        <div class="set-grid">
+          <label class="field">โฟกัส (นาที)<input type="number" id="set-focus" min="1" max="120"></label>
+          <label class="field">พักสั้น (นาที)<input type="number" id="set-short" min="1" max="60"></label>
+          <label class="field">พักยาว (นาที)<input type="number" id="set-long" min="1" max="60"></label>
+          <label class="field">พักยาวทุก ๆ (รอบ)<input type="number" id="set-every" min="2" max="8"></label>
+          <label class="check"><input type="checkbox" id="set-auto">เริ่มช่วงถัดไปให้อัตโนมัติ</label>
+          <label class="check"><input type="checkbox" id="set-mute">ปิดเสียงพื้นหลังระหว่างพัก</label>
+        </div>
+      </details>
+    </aside>
+  </main>
+
+  <p class="foot">เทคนิค Pomodoro: โฟกัส 25 นาที พัก 5 นาที ครบ 4 รอบแล้วพักยาว 15–30 นาที เสียงทั้งหมดสังเคราะห์สดในเบราว์เซอร์ ใช้ได้แม้ไม่มีอินเทอร์เน็ต</p>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+    set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  };
+
+  /* ---------- Settings & state ---------- */
+  const settings = Object.assign({focus:25, short:5, long:15, every:4, auto:true, mute:false}, store.get('pomo.settings', {}));
+  const MODES = {
+    focus:{label:'โฟกัส', start:'เริ่มโฟกัส', hint:'ปิดแจ้งเตือนโทรศัพท์ แล้วเริ่มได้เลย'},
+    short:{label:'พักสั้น', start:'เริ่มพัก', hint:'ลุกเดิน ยืดเส้น ดื่มน้ำ ไม่ต้องเปิดโซเชียล'},
+    long:{label:'พักยาว', start:'เริ่มพักยาว', hint:'พักสายตาจากจอ ทานของว่าง ครบชุดแล้ว เก่งมาก'}
+  };
+  const state = {mode:'focus', running:false, endAt:0, remaining:settings.focus*60000, cycle:0};
+  const dur = m => settings[m] * 60000;
+
+  const C = 2 * Math.PI * 136;
+  const prog = $('#prog');
+  prog.style.strokeDasharray = C;
+
+  function todayKey(){ const d = new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  function getStats(){ const s = store.get('pomo.stats', null); return (s && s.date === todayKey()) ? s : {date:todayKey(), sessions:0, minutes:0}; }
+  function renderStats(){ const s = getStats(); $('#today').innerHTML = 'วันนี้ <b>'+s.sessions+'</b> รอบ · <b>'+s.minutes+'</b> นาที'; }
+
+  function drawTicks(){
+    const n = settings[state.mode], g = $('#ticks'); let html = '';
+    const elapsedMin = (dur(state.mode) - state.remaining) / 60000;
+    for (let i = 0; i < n; i++){
+      const a = (i / n) * 2 * Math.PI - Math.PI/2;
+      const r1 = 148, r2 = i % 5 === 0 ? 156 : 152;
+      const on = i >= Math.floor(elapsedMin) ? ' on' : '';
+      html += '<line class="tick'+on+'" x1="'+(160+r1*Math.cos(a)).toFixed(2)+'" y1="'+(160+r1*Math.sin(a)).toFixed(2)+'" x2="'+(160+r2*Math.cos(a)).toFixed(2)+'" y2="'+(160+r2*Math.sin(a)).toFixed(2)+'"/>';
+    }
+    g.innerHTML = html;
+  }
+
+  let lastTickMin = -1;
+  function render(){
+    const secs = Math.ceil(state.remaining / 1000);
+    const mm = String(Math.floor(secs / 60)).padStart(2,'0'), ss = String(secs % 60).padStart(2,'0');
+    $('#time').textContent = mm + ':' + ss;
+    const frac = Math.max(0, Math.min(1, state.remaining / dur(state.mode)));
+    prog.style.strokeDashoffset = C * (1 - frac);
+
+    const every = settings.every;
+    const round = state.mode === 'focus' ? (state.cycle % every) + 1 : ((state.cycle - 1) % every) + 1;
+    $('#phase').textContent = MODES[state.mode].label + ' · รอบที่ ' + Math.max(1, round) + '/' + every;
+    const filled = (state.mode === 'long' && state.cycle > 0) ? every : state.cycle % every;
+    let dots = ''; for (let i = 0; i < every; i++) dots += '<span class="'+(i < filled ? 'done' : '')+'"></span>';
+    $('#dots').innerHTML = dots;
+
+    document.body.dataset.mode = state.mode;
+    document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-selected', b.dataset.mode === state.mode));
+    $('#ico-play').hidden = state.running; $('#ico-pause').hidden = !state.running;
+    const full = state.remaining >= dur(state.mode);
+    $('#toggle-label').textContent = state.running ? 'หยุดชั่วคราว' : (full ? MODES[state.mode].start : 'ทำต่อ');
+    document.title = state.running ? (mm+':'+ss+' · '+MODES[state.mode].label) : 'ห้องโฟกัส';
+
+    const m = Math.floor((dur(state.mode) - state.remaining) / 60000);
+    if (m !== lastTickMin){ lastTickMin = m; drawTicks(); }
+  }
+
+  function setMode(mode, autostart){
+    state.mode = mode; state.running = false; state.remaining = dur(mode);
+    lastTickMin = -1; $('#hint').firstChild.textContent = MODES[mode].hint + ' · ';
+    applyDuck(); render();
+    if (autostart) start();
+  }
+  function start(){
+    ensureAudio();
+    state.running = true; state.endAt = Date.now() + state.remaining;
+    requestWake(); render();
+  }
+  function pause(){
+    state.remaining = Math.max(0, state.endAt - Date.now()); state.running = false; releaseWake(); render();
+  }
+  function complete(){
+    state.running = false; state.remaining = 0; render();
+    const wasFocus = state.mode === 'focus';
+    chime(wasFocus);
+    let next;
+    if (wasFocus){
+      state.cycle++;
+      const s = getStats(); s.sessions++; s.minutes += settings.focus; store.set('pomo.stats', s); renderStats();
+      next = state.cycle % settings.every === 0 ? 'long' : 'short';
+    } else {
+      if (state.mode === 'long') state.cycle = 0;
+      next = 'focus';
+    }
+    setMode(next, settings.auto);
+    if (!settings.auto) releaseWake();
+  }
+  function skip(){
+    if (state.mode === 'focus') setMode('short', state.running);
+    else { if (state.mode === 'long') state.cycle = 0; setMode('focus', state.running); }
+  }
+
+  setInterval(() => {
+    if (!state.running) return;
+    state.remaining = Math.max(0, state.endAt - Date.now());
+    if (state.remaining <= 0) complete(); else render();
+  }, 250);
+
+  $('#toggle').addEventListener('click', () => state.running ? pause() : start());
+  $('#reset').addEventListener('click', () => { state.running = false; state.remaining = dur(state.mode); lastTickMin = -1; releaseWake(); render(); });
+  $('#skip').addEventListener('click', skip);
+  document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode, false)));
+  document.addEventListener('keydown', e => {
+    if (e.target.closest('input,textarea,button,select,summary')) return;
+    if (e.code === 'Space'){ e.preventDefault(); state.running ? pause() : start(); }
+    else if (e.key === 'r' || e.key === 'R') $('#reset').click();
+    else if (e.key === 's' || e.key === 'S') skip();
+  });
+
+  const task = $('#task');
+  task.value = store.get('pomo.task', '');
+  task.addEventListener('input', () => store.set('pomo.task', task.value));
+  task.addEventListener('keydown', e => { if (e.key === 'Enter') task.blur(); });
+
+  /* Wake lock (optional) */
+  let wake = null;
+  function requestWake(){ try { if (navigator.wakeLock && !wake) navigator.wakeLock.request('screen').then(w => { wake = w; w.addEventListener('release', () => { wake = null; }); }).catch(() => {}); } catch(e){} }
+  function releaseWake(){ try { if (wake) wake.release(); } catch(e){} wake = null; }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && state.running) requestWake(); });
+
+  /* Settings UI */
+  const bind = [['#set-focus','focus'],['#set-short','short'],['#set-long','long'],['#set-every','every']];
+  bind.forEach(([sel, key]) => {
+    const el = $(sel); el.value = settings[key];
+    el.addEventListener('change', () => {
+      const v = Math.round(Number(el.value));
+      const min = Number(el.min), max = Number(el.max);
+      if (!isFinite(v)) { el.value = settings[key]; return; }
+      settings[key] = Math.min(max, Math.max(min, v)); el.value = settings[key];
+      store.set('pomo.settings', settings);
+      if (!state.running) { state.remaining = dur(state.mode); lastTickMin = -1; }
+      render();
+    });
+  });
+  [['#set-auto','auto'],['#set-mute','mute']].forEach(([sel, key]) => {
+    const el = $(sel); el.checked = settings[key];
+    el.addEventListener('change', () => { settings[key] = el.checked; store.set('pomo.settings', settings); applyDuck(); });
+  });
+
+  /* ---------- Audio engine (all sounds synthesized) ---------- */
+  let ctx = null, master = null, ambient = null;
+  const noiseBufs = {};
+  let masterVol = store.get('pomo.master', 80);
+  $('#master').value = masterVol;
+
+  function ensureAudio(){
+    if (!ctx){
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      ctx = new AC();
+      const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+      master = ctx.createGain(); master.gain.value = masterVol / 100;
+      master.connect(comp); comp.connect(ctx.destination);
+      ambient = ctx.createGain(); ambient.connect(master);
+      SOUNDS.forEach(s => { s.gain = ctx.createGain(); s.gain.gain.value = s.vol / 100 * s.scale; s.gain.connect(ambient); });
+      applyDuck(true);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  function applyDuck(instant){
+    if (!ctx) return;
+    const target = (settings.mute && state.mode !== 'focus') ? 0 : 1;
+    if (instant) ambient.gain.value = target; else ambient.gain.setTargetAtTime(target, ctx.currentTime, 0.6);
+  }
+
+  function noise(type){
+    if (noiseBufs[type]) return noiseBufs[type];
+    const sr = ctx.sampleRate, len = sr * 6, buf = ctx.createBuffer(2, len, sr);
+    for (let c = 0; c < 2; c++){
+      const d = buf.getChannelData(c);
+      if (type === 'white'){ for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; }
+      else if (type === 'pink'){
+        let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+        for (let i = 0; i < len; i++){
+          const w = Math.random() * 2 - 1;
+          b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.969*b2+w*0.153852;
+          b3=0.8665*b3+w*0.3104856; b4=0.55*b4+w*0.5329522; b5=-0.7616*b5-w*0.016898;
+          d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+        }
+      } else {
+        let last = 0;
+        for (let i = 0; i < len; i++){ const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+        const drift = d[len-1] - d[0];
+        for (let i = 0; i < len; i++) d[i] -= drift * i / len; // seamless loop
+      }
+    }
+    return (noiseBufs[type] = buf);
+  }
+  function loop(type){ const s = ctx.createBufferSource(); s.buffer = noise(type); s.loop = true; s.loopEnd = s.buffer.duration; return s; }
+  function filt(type, f, q){ const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; if (q) b.Q.value = q; return b; }
+  function gainN(v){ const g = ctx.createGain(); g.gain.value = v; return g; }
+  function pan(v){ if (ctx.createStereoPanner){ const p = ctx.createStereoPanner(); p.pan.value = v; return p; } return gainN(1); }
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  function impulse(sec){
+    const len = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++){ const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 3); }
+    return b;
+  }
+
+  const SOUNDS = [
+    {id:'rain', group:'ธรรมชาติ', name:'เสียงฝน', desc:'ฝนตกพรำ ๆ นอกหน้าต่าง', vol:70, scale:0.9, build(out){
+      const s = loop('pink'), hp = filt('highpass', 500), lp = filt('lowpass', 8000), g = gainN(0.5);
+      s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(out);
+      const r = loop('brown'), rlp = filt('lowpass', 380), rg = gainN(0.55);
+      r.connect(rlp); rlp.connect(rg); rg.connect(out);
+      s.start(); r.start();
+      const white = noise('white');
+      const t = setInterval(() => {
+        const t0 = ctx.currentTime;
+        for (let k = 0; k < 6; k++){
+          if (Math.random() > 0.55) continue;
+          const at = t0 + 0.05 + Math.random() * 0.12;
+          const d = ctx.createBufferSource(); d.buffer = white;
+          const bp = filt('bandpass', 1400 + Math.random() * 5200, 2 + Math.random() * 4);
+          const e = ctx.createGain(), a = 0.04 + Math.random() * 0.22;
+          e.gain.setValueAtTime(0, at); e.gain.linearRampToValueAtTime(a, at + 0.002);
+          e.gain.exponentialRampToValueAtTime(0.0008, at + 0.03 + Math.random() * 0.06);
+          const p = pan(Math.random() * 1.6 - 0.8);
+          d.connect(bp); bp.connect(e); e.connect(p); p.connect(out);
+          d.start(at, Math.random() * 5, 0.12);
+        }
+      }, 100);
+      return () => { clearInterval(t); s.stop(); r.stop(); };
+    }},
+    {id:'ocean', group:'ธรรมชาติ', name:'คลื่นทะเล', desc:'คลื่นซัดเข้าฝั่งเป็นจังหวะช้า ๆ', vol:65, scale:1, build(out){
+      const s = loop('brown'), lp = filt('lowpass', 500, 0.6), g = gainN(0.5);
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.085;
+      const depth = gainN(0.42), fdepth = gainN(340);
+      lfo.connect(depth); depth.connect(g.gain); lfo.connect(fdepth); fdepth.connect(lp.frequency);
+      s.connect(lp); lp.connect(g); g.connect(out);
+      const f = loop('pink'), hp = filt('highpass', 1800), fg = gainN(0.08), fd = gainN(0.07);
+      lfo.connect(fd); fd.connect(fg.gain);
+      f.connect(hp); hp.connect(fg); fg.connect(out);
+      s.start(); f.start(); lfo.start();
+      return () => { s.stop(); f.stop(); lfo.stop(); };
+    }},
+    {id:'white', group:'นอยส์', name:'White noise', desc:'กลบเสียงรบกวนได้ดีที่สุด เสียงคม', vol:40, scale:0.28, build(out){
+      const s = loop('white'); s.connect(out); s.start(); return () => s.stop();
+    }},
+    {id:'pink', group:'นอยส์', name:'Pink noise', desc:'นุ่มกว่า คล้ายลมหรือน้ำตก', vol:50, scale:0.6, build(out){
+      const s = loop('pink'); s.connect(out); s.start(); return () => s.stop();
+    }},
+    {id:'brown', group:'นอยส์', name:'Brown noise', desc:'ทุ้มลึก คล้ายเสียงเครื่องบิน', vol:60, scale:1, build(out){
+      const s = loop('brown'); s.connect(out); s.start(); return () => s.stop();
+    }},
+    {id:'ambient', group:'บรรเลง', name:'เปียโนแอมเบียนต์', desc:'คอร์ดนุ่ม ๆ กับโน้ตเปียโนเบา ๆ ไม่มีเนื้อร้อง', vol:65, scale:1, build(out){
+      const bus = gainN(1), dry = gainN(0.6), wet = gainN(0.6), verb = ctx.createConvolver();
+      verb.buffer = impulse(3.8);
+      bus.connect(dry); dry.connect(out); bus.connect(verb); verb.connect(wet); wet.connect(out);
+      const delay = ctx.createDelay(2); delay.delayTime.value = 0.72;
+      const fb = gainN(0.32), dl = gainN(0.22);
+      delay.connect(fb); fb.connect(delay); delay.connect(dl); dl.connect(bus);
+      const CH = [[53,57,60,64],[52,55,59,62],[50,53,57,60],[48,52,55,59]];
+      const MEL = [67,69,72,74,76,79,81,84];
+      const LEN = 9, BEAT = 0.75;
+      let ci = 0, nextChord = ctx.currentTime + 0.1, nextNote = ctx.currentTime + 2;
+      function pad(m, t, len, peak){
+        const lp = filt('lowpass', 950), g = ctx.createGain();
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + 2.8);
+        g.gain.setValueAtTime(peak, t + len - 1); g.gain.linearRampToValueAtTime(0, t + len + 1.4);
+        [-7, 7].forEach(dt => { const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = mtof(m); o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + len + 1.5); });
+        lp.connect(g); g.connect(bus);
+      }
+      function pluck(m, t){
+        const f = mtof(m), g = ctx.createGain(), p = pan(Math.random() * 0.8 - 0.4);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.1, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0005, t + 3.2);
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = f * 2; const g2 = gainN(0.25);
+        o.connect(g); o2.connect(g2); g2.connect(g); g.connect(p); p.connect(bus); p.connect(delay);
+        o.start(t); o2.start(t); o.stop(t + 3.4); o2.stop(t + 3.4);
+      }
+      function schedule(){
+        const ahead = ctx.currentTime + 1.6;
+        while (nextChord < ahead){
+          const ch = CH[ci % CH.length];
+          ch.forEach(m => pad(m, nextChord, LEN, 0.032));
+          pad(ch[0] - 12, nextChord, LEN, 0.05);
+          ci++; nextChord += LEN;
+        }
+        while (nextNote < ahead){
+          if (Math.random() < 0.42) pluck(MEL[Math.floor(Math.random() * MEL.length)], nextNote);
+          nextNote += BEAT * (Math.random() < 0.3 ? 2 : 1);
+        }
+      }
+      schedule(); const t = setInterval(schedule, 250);
+      return () => clearInterval(t);
+    }},
+    {id:'alpha', group:'บรรเลง', name:'คลื่นอัลฟ่า 10 Hz', desc:'เสียงโทนต่ำแบบ binaural ใส่หูฟังจะได้ผลดีที่สุด', vol:45, scale:0.5, build(out){
+      const merger = ctx.createChannelMerger(2);
+      const l = ctx.createOscillator(), r = ctx.createOscillator();
+      l.frequency.value = 196; r.frequency.value = 206;
+      const gl = gainN(0.35), gr = gainN(0.35);
+      l.connect(gl); gl.connect(merger, 0, 0); r.connect(gr); gr.connect(merger, 0, 1);
+      merger.connect(out); l.start(); r.start();
+      return () => { l.stop(); r.stop(); };
+    }}
+  ];
+
+  const savedVols = store.get('pomo.vols', {});
+  SOUNDS.forEach(s => { if (typeof savedVols[s.id] === 'number') s.vol = savedVols[s.id]; });
+
+  function startSound(s){
+    ensureAudio(); if (!ctx) return;
+    const g = ctx.createGain(), now = ctx.currentTime;
+    g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(1, now + 1.2);
+    g.connect(s.gain);
+    s.inst = {g, stop: s.build(g)};
+    s.row.classList.add('on'); s.btn.setAttribute('aria-pressed', 'true');
+  }
+  function stopSound(s){
+    if (!s.inst) return;
+    const {g, stop} = s.inst, now = ctx.currentTime;
+    g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value, now); g.gain.linearRampToValueAtTime(0, now + 0.6);
+    setTimeout(() => { try { stop(); } catch(e){} g.disconnect(); }, 700);
+    s.inst = null;
+    s.row.classList.remove('on'); s.btn.setAttribute('aria-pressed', 'false');
+  }
+
+  const groups = {};
+  const wrap = $('#sound-groups');
+  SOUNDS.forEach(s => {
+    if (!groups[s.group]){
+      const g = document.createElement('div'); g.className = 'group';
+      g.innerHTML = '<p class="group-label">' + s.group + '</p>';
+      wrap.appendChild(g); groups[s.group] = g;
+    }
+    const row = document.createElement('div'); row.className = 'snd';
+    row.innerHTML =
+      '<button class="snd-toggle" id="snd-' + s.id + '" aria-pressed="false"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>' +
+      '<span class="snd-text"><b>' + s.name + '</b><small>' + s.desc + '</small></span></button>' +
+      '<input class="snd-vol" type="range" id="vol-' + s.id + '" min="0" max="100" value="' + s.vol + '" aria-label="ความดัง ' + s.name + '">';
+    groups[s.group].appendChild(row);
+    s.row = row; s.btn = row.querySelector('button');
+    s.btn.addEventListener('click', () => s.inst ? stopSound(s) : startSound(s));
+    row.querySelector('input').addEventListener('input', e => {
+      s.vol = Number(e.target.value);
+      if (s.gain) s.gain.gain.setTargetAtTime(s.vol / 100 * s.scale, ctx.currentTime, 0.05);
+      const v = store.get('pomo.vols', {}); v[s.id] = s.vol; store.set('pomo.vols', v);
+    });
+  });
+
+  $('#master').addEventListener('input', e => {
+    masterVol = Number(e.target.value); store.set('pomo.master', masterVol);
+    if (master) master.gain.setTargetAtTime(masterVol / 100, ctx.currentTime, 0.05);
+  });
+  $('#stop-all').addEventListener('click', () => SOUNDS.forEach(stopSound));
+
+  /* Bell when a phase ends: falling after focus, rising after a break */
+  function chime(afterFocus){
+    if (!ensureAudio()) return;
+    const notes = afterFocus ? [987.77, 659.25] : [659.25, 987.77];
+    notes.forEach((f, i) => {
+      const t = ctx.currentTime + 0.05 + i * 0.42;
+      [[1, 0.22], [2.76, 0.05], [5.4, 0.015]].forEach(([mult, amp]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.value = f * mult;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6 / mult + 0.4);
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + 3);
+      });
+    });
+  }
+
+  renderStats();
+  setMode('focus', false);
+})();
+</script>
+
+</body></html>
